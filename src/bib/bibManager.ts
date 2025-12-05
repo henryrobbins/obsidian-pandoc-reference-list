@@ -795,8 +795,10 @@ export class BibManager {
               if (item.attachments?.length) {
                 const attLinks: string[] = [];
                 for (const att of item.attachments) {
-                  if (/\.pdf$/.test(att.path)) {
-                    attLinks.push(att.path);
+                  if (/\.pdf$/.test(att.path) && att.select) {
+                    // Convert zotero://select URI to zotero://open-pdf URI
+                    const openPdfLink = att.select.replace('/select/', '/open-pdf/');
+                    attLinks.push(openPdfLink);
                   }
                 }
                 if (attLinks.length) {
@@ -874,12 +876,13 @@ export class BibManager {
             });
           }
           if (zPDFLinks) {
-            zPDFLinks.forEach((link) => {
+            zPDFLinks.forEach((link, index) => {
               div.createDiv('clickable-icon', (div) => {
                 setIcon(div, 'lucide-file-text');
-                div.setAttr('aria-label', path.parse(link).base);
+                // Use a generic label or PDF index since we no longer have file paths
+                div.setAttr('aria-label', `Open PDF ${index + 1} in Zotero`);
                 div.onClickEvent(() => {
-                  activeWindow.open(`file://${encodeURI(link)}`, '_blank');
+                  activeWindow.open(link, '_blank');
                 });
               });
             });
